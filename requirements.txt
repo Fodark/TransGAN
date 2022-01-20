@@ -12,3 +12,5 @@ tensorboardX==1.6
 tensorflow==2.4
 tqdm==4.29.1
 opencv-python
+omegaconf
+wandb

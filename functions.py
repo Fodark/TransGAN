@@ -16,6 +16,7 @@ from imageio import imsave
 from utils.utils import make_grid, save_image
 from tqdm import tqdm
 import cv2
+import wandb
 
 # from utils.fid_score import calculate_fid_given_paths
 from utils.torch_fid_score import get_fid
@@ -149,7 +150,7 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
             dis_optimizer.zero_grad()
 
             writer.add_scalar('d_loss', d_loss.item(), global_steps) if args.rank == 0 else 0
-
+            wandb.log({'d/loss': d_loss.item()}, step=global_steps) if args.rank == 0 else 0
         # -----------------
         #  Train Generator
         # -----------------
@@ -201,6 +202,7 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
                 d_lr = dis_scheduler.step(global_steps)
                 writer.add_scalar('LR/g_lr', g_lr, global_steps)
                 writer.add_scalar('LR/d_lr', d_lr, global_steps)
+                wandb.log({'g/lr': g_lr, 'd/lr': d_lr}, step=global_steps) if args.rank == 0 else 0
 
             # moving average weight
             ema_nimg = args.ema_kimg * 1000
@@ -218,6 +220,7 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
                 del cpu_p
 
             writer.add_scalar('g_loss', g_loss.item(), global_steps) if args.rank == 0 else 0
+            wandb.log({'g/loss': g_loss.item()}, step=global_steps) if args.rank == 0 else 0
             gen_step += 1
 
         # verbose
@@ -228,6 +231,7 @@ def train(args, gen_net: nn.Module, dis_net: nn.Module, gen_optimizer, dis_optim
 #             img_grid = make_grid(sample_imgs, nrow=4, normalize=True, scale_each=True)
 #             save_image(sample_imgs, f'sampled_images_{args.exp_name}.jpg', nrow=4, normalize=True, scale_each=True)
             # writer.add_image(f'sampled_images_{args.exp_name}', img_grid, global_steps)
+            wandb.log({"examples" : [wandb.Image(im) for im in sample_imgs.cpu().detach()]}, step=global_steps)
             tqdm.write(
                 "[Epoch %d/%d] [Batch %d/%d] [D loss: %f] [G loss: %f] [ema: %f] " %
                 (epoch, args.max_epoch, iter_idx % len(train_loader), len(train_loader), d_loss.item(), g_loss.item(), ema_beta))
@@ -332,6 +336,7 @@ def validate(args, fixed_z, fid_stat, epoch, gen_net: nn.Module, writer_dict, cl
         writer.add_scalar('Inception_score/mean', mean, global_steps)
         writer.add_scalar('Inception_score/std', std, global_steps)
         writer.add_scalar('FID_score', fid_score, global_steps)
+        wandb.log({"IS/mean" : mean, "IS/std" : std, "FID" : fid_score}, step=global_steps)
 
         writer_dict['valid_global_steps'] = global_steps + 1
 
