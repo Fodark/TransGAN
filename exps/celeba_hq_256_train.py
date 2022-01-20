@@ -12,7 +12,7 @@ def parse_args():
     return opt
 args = parse_args()
 
-os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python train_derived.py \
+os.system(f"CUDA_VISIBLE_DEVICES=0,1,2,3 python train_derived.py \
 -gen_bs 32 \
 -dis_bs 16 \
 --accumulated_times 4 \

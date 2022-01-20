@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import cfg
+import wandb
 import models_search
 import datasets
 from functions import train, validate, save_samples, LinearLrDecay, load_params, copy_params, cur_stages
@@ -27,9 +28,9 @@ import random
 # torch.backends.cudnn.benchmark = True
 
 
-def main(args=None):
-    if args is None:
-        args = cfg.parse_args()
+def main():
+    args = cfg.parse_args()
+    wandb.init(project="TransGAN", name="celeba_256", config=args)
     
 #     _init_inception()
 #     inception_path = check_or_download_inception(None)
