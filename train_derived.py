@@ -27,8 +27,9 @@ import random
 # torch.backends.cudnn.benchmark = True
 
 
-def main():
-    args = cfg.parse_args()
+def main(args=None):
+    if args is None:
+        args = cfg.parse_args()
     
 #     _init_inception()
 #     inception_path = check_or_download_inception(None)
